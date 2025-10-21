@@ -1,68 +1,66 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
-import scipy.stats as stats
 
-"""
-Aplikasi Analisa Score Ballard & Lubchenco
-Educational use only. Tidak untuk penegakan diagnosa klinis.
-"""
+# --------------------------
+# Fungsi Klasifikasi Ballard
+# --------------------------
+def hitung_usia_gestasi_ballard(total_skor):
+    # Rumus konversi skor Ballard ke usia gestasi
+    usia_gestasi = (total_skor * 0.4) + 24
+    return round(usia_gestasi)  # dibulatkan ke minggu terdekat
 
-# === Fungsi Konversi Skor Ballard ke Usia Gestasi ===
-def ballard_to_gestational_age(score):
-    return round(24 + (score * 0.4), 1)
+# --------------------------
+# Fungsi Klasifikasi Lubchenco
+# --------------------------
+def klasifikasi_lubchenco(usia_gestasi, berat_badan, df):
+    # Pastikan usia gestasi tersedia dalam data
+    if usia_gestasi not in df['GA_weeks'].values:
+        # jika tidak ada, cari usia terdekat
+        usia_terdekat = df.iloc[(df['GA_weeks'] - usia_gestasi).abs().argsort()[:1]]['GA_weeks'].values[0]
+        st.warning(f"Usia gestasi {usia_gestasi} minggu tidak ditemukan dalam tabel. "
+                   f"Digunakan usia terdekat: {usia_terdekat} minggu.")
+        usia_gestasi = usia_terdekat
 
-# === Load Data Lubchenco ===
-@st.cache_data
-def load_lubchenco_data():
-    try:
-        df = pd.read_csv("lubchenco_sample.csv")
-        return df
-    except:
-        st.error("File 'lubchenco_sample.csv' tidak ditemukan. Pastikan sudah diupload.")
-        return pd.DataFrame()
+    data_bayi = df[df['GA_weeks'] == usia_gestasi].iloc[0]
+    batas_sga = data_bayi['P10']
+    batas_lga = data_bayi['P90']
 
-# === Fungsi Klasifikasi ===
-def classify_lubchenco(gest_age, weight, sex, lubchenco_data):
-    if lubchenco_data.empty:
-        return "Data Lubchenco tidak tersedia."
-
-    df = lubchenco_data[
-        (lubchenco_data["Gestational_Age"] == int(round(gest_age))) &
-        (lubchenco_data["Sex"].str.lower() == sex.lower())
-    ]
-    if df.empty:
-        return "Data tidak tersedia untuk usia tersebut."
-
-    p10 = df["P10"].values[0]
-    p90 = df["P90"].values[0]
-
-    if weight < p10:
-        return "SGA (Small for Gestational Age)"
-    elif weight > p90:
-        return "LGA (Large for Gestational Age)"
+    if berat_badan < batas_sga:
+        kategori = 'SGA (Small for Gestational Age)'
+    elif berat_badan > batas_lga:
+        kategori = 'LGA (Large for Gestational Age)'
     else:
-        return "AGA (Appropriate for Gestational Age)"
+        kategori = 'AGA (Appropriate for Gestational Age)'
 
-# === Main App ===
-def main():
-    st.title("🍼 Analisa Skor Ballard & Kurva Lubchenco")
-    st.write("Aplikasi untuk memperkirakan usia gestasi dan menentukan status pertumbuhan bayi baru lahir.")
-    st.divider()
+    return kategori, batas_sga, batas_lga, usia_gestasi
 
-    score = st.number_input("Masukkan Total Skor Ballard", min_value=0, max_value=50, value=30)
-    weight = st.number_input("Masukkan Berat Badan Lahir (gram)", min_value=300, max_value=6000, value=3000)
-    sex = st.selectbox("Pilih Jenis Kelamin Bayi", ["Male", "Female"])
+# --------------------------
+# Tampilan Streamlit
+# --------------------------
+st.title("🩺 Aplikasi Penilaian Usia Gestasi & Klasifikasi Bayi (Ballard + Lubchenco)")
+st.write("Aplikasi ini menghitung usia gestasi dari skor Ballard dan mengklasifikasikan bayi berdasarkan kurva Lubchenco.")
 
-    if st.button("Analisa"):
-        gest_age = ballard_to_gestational_age(score)
-        st.info(f"Perkiraan Usia Gestasi: **{gest_age} minggu**")
+# Upload File CSV
+uploaded_file = st.file_uploader("📄 Upload file tabel Lubchenco (CSV format standar)", type=["csv"])
 
-        lubchenco_data = load_lubchenco_data()
-        kategori = classify_lubchenco(gest_age, weight, sex, lubchenco_data)
-        st.success(f"Hasil Klasifikasi Berat Lahir: **{kategori}**")
+if uploaded_file:
+    df_lubchenco = pd.read_csv(uploaded_file)
+    st.success("File CSV berhasil diupload dan dibaca ✅")
 
-        st.caption("© 2025 | Edukasi Neonatologi")
+    # Input Skor Ballard
+    total_skor = st.number_input("🧮 Masukkan Total Skor Ballard", min_value=0, max_value=50, step=1)
+    berat_badan = st.number_input("⚖️ Masukkan Berat Badan Bayi (gram)", min_value=300, max_value=6000, step=10)
 
-if __name__ == "__main__":
-    main()
+    if st.button("🔎 Analisa"):
+        usia_gestasi = hitung_usia_gestasi_ballard(total_skor)
+        kategori, batas_sga, batas_lga, usia_final = klasifikasi_lubchenco(usia_gestasi, berat_badan, df_lubchenco)
+
+        st.subheader("📊 Hasil Analisis")
+        st.write(f"**Usia Gestasi (hasil Ballard):** {usia_gestasi} minggu")
+        st.write(f"**Usia Gestasi yang digunakan (sesuai tabel):** {usia_final} minggu")
+        st.write(f"**Berat Badan Bayi:** {berat_badan} gram")
+        st.write(f"**Kategori Lubchenco:** 🟢 **{kategori}**")
+        st.write(f"Batas SGA (P10): {batas_sga} g | Batas LGA (P90): {batas_lga} g")
+
+else:
+    st.info("📌 Silakan upload file CSV Lubchenco terlebih dahulu untuk melanjutkan.")
