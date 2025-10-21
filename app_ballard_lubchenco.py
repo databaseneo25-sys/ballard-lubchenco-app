@@ -1,8 +1,7 @@
-# app_ballard_lubchenco_full.py
 import streamlit as st
 import pandas as pd
 import matplotlib
-matplotlib.use("Agg")  # safe backend for server / Streamlit Cloud
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from datetime import datetime
 from io import BytesIO
@@ -11,27 +10,111 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 import os
 
-st.set_page_config(page_title="Ballard + Lubchenco (Final - Ballard form)", layout="centered")
+st.set_page_config(page_title="Ballard + Lubchenco Final", layout="centered")
 
 # ---------------------------
-# DATA LUBCHENCO (DICALIBRASI)
+# DATA LUBCHENCO
 # ---------------------------
 DATA = {
     "GA_weeks": [24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43],
-    "P10": [500,600,700,800,900,1050,1200,1350,1500,1700,1900,2100,2300,2450,2550,2600,2600,2650,2700,2750],
-    "P25": [600,700,850,950,1100,1250,1400,1600,1800,2000,2200,2400,2600,2750,2900,3000,3100,3150,3200,3250],
-    "P50": [700,800,950,1100,1250,1400,1600,1800,2000,2200,2450,2700,2950,3100,3250,3400,3400,3450,3500,3550],
-    "P75": [800,900,1050,1200,1350,1500,1700,1900,2100,2350,2600,2850,3100,3300,3550,3700,3900,3950,4000,4050],
-    "P90": [900,1000,1150,1300,1500,1650,1850,2100,2350,2600,2850,3100,3350,3600,3850,4000,4300,4350,4400,4450]
+    "P10": [500,600,700,800,900,1050,1200,1350,1500,1700,1900,2100,2300,2500,2600,2700,2700,2800,2850,2900],
+    "P25": [600,750,900,1050,1200,1350,1500,1650,1800,2000,2200,2350,2500,2600,2800,2900,3000,3100,3150,3200],
+    "P50": [700,850,1000,1150,1300,1500,1650,1800,2000,2200,2400,2550,2700,2900,3100,3200,3300,3400,3450,3500],
+    "P75": [800,950,1100,1300,1450,1650,1800,2000,2200,2400,2600,2750,3000,3200,3400,3500,3600,3700,3750,3800],
+    "P90": [900,1050,1200,1400,1600,1800,1950,2150,2350,2550,2750,2950,3300,3500,3700,3800,3900,4000,4050,4100],
 }
 df_lub = pd.DataFrame(DATA)
 
 # ---------------------------
-# HISTORY FILE
+# BALLARD SCORE TABLE (resmi)
 # ---------------------------
-HISTORY_FILE = "history_ballard_lubchenco_full.csv"
+BALLARD_TABLE = {
+    -10: 20, -5: 22, 0: 24, 5: 26, 10: 28,
+    15: 30, 20: 32, 25: 34, 30: 36, 35: 38,
+    40: 40, 45: 42, 50: 44
+}
 
-def save_history(record: dict):
+def score_to_ga(total_score):
+    keys = sorted(BALLARD_TABLE.keys())
+    if total_score <= keys[0]:
+        return BALLARD_TABLE[keys[0]]
+    if total_score >= keys[-1]:
+        return BALLARD_TABLE[keys[-1]]
+    for i in range(len(keys) - 1):
+        low, high = keys[i], keys[i + 1]
+        if low <= total_score <= high:
+            ga_low, ga_high = BALLARD_TABLE[low], BALLARD_TABLE[high]
+            ga = ga_low + (ga_high - ga_low) * ((total_score - low) / (high - low))
+            return round(ga, 1)
+    return None
+
+# ---------------------------
+# BALLARD ITEMS (12 komponen)
+# ---------------------------
+BALLARD_ITEMS = [
+    ("Sikap tubuh (Postur)", 0, 5),
+    ("Persegi jendela (pergelangan tangan)", 0, 5),
+    ("Rekoli lengan (Arm recoil)", 0, 5),
+    ("Sudut popliteal", 0, 5),
+    ("Tanda selendang (Scarf sign)", 0, 5),
+    ("Tumit ke telinga (Heel to ear)", 0, 5),
+    ("Kulit", 0, 5),
+    ("Lanugo", 0, 5),
+    ("Permukaan plantar (Plantar surface)", 0, 5),
+    ("Payudara", 0, 5),
+    ("Mata & telinga", 0, 5),
+    ("Genitalia (L/P)", 0, 5),
+]
+
+# ---------------------------
+# KLASIFIKASI KMK/SMK/BMK
+# ---------------------------
+def classify_kmk_smk_bmk(ga_weeks, berat):
+    row = df_lub.iloc[(df_lub['GA_weeks'] - ga_weeks).abs().argsort()[:1]].iloc[0]
+    ga_used = row['GA_weeks']
+    if berat < row['P10']:
+        kategori = "KMK (Kecil untuk Masa Kehamilan)"
+    elif berat > row['P90']:
+        kategori = "BMK (Besar untuk Masa Kehamilan)"
+    else:
+        kategori = "SMK (Sedang untuk Masa Kehamilan)"
+    return kategori, int(ga_used), row
+
+# ---------------------------
+# PDF REPORT
+# ---------------------------
+def create_pdf(report_data, fig):
+    buf = BytesIO()
+    c = canvas.Canvas(buf, pagesize=A4)
+    width, height = A4
+
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(50, height - 50, "LAPORAN: BALLARD + LUBCHENCO")
+
+    c.setFont("Helvetica", 10)
+    y = height - 80
+    for k, v in report_data.items():
+        c.drawString(50, y, f"{k}: {v}")
+        y -= 14
+
+    # Simpan grafik
+    img_buf = BytesIO()
+    fig.savefig(img_buf, format="png", bbox_inches="tight", dpi=150)
+    img_buf.seek(0)
+    image = ImageReader(img_buf)
+    c.drawImage(image, 40, 80, width=520, preserveAspectRatio=True, mask='auto')
+
+    c.showPage()
+    c.save()
+    buf.seek(0)
+    return buf.getvalue()
+
+# ---------------------------
+# HISTORY
+# ---------------------------
+HISTORY_FILE = "history_ballard_lubchenco.csv"
+
+def save_history(record):
     df = pd.DataFrame([record])
     header = not os.path.exists(HISTORY_FILE)
     df.to_csv(HISTORY_FILE, mode='a', index=False, header=header, encoding='utf-8')
@@ -42,199 +125,96 @@ def load_history():
     return pd.DataFrame()
 
 # ---------------------------
-# Ballard components (New Ballard) - 12 items
-# Each item: 0..5 score -> total max = 60
-# Conversion: map 0..max_score -> 24..44 minggu (linear)
-# ---------------------------
-BALLARD_ITEMS = [
-    ("Kulit (Skin)", 0, 5),
-    ("Lanugo", 0, 5),
-    ("Plantar (permukaan plantar)", 0, 5),
-    ("Payudara (Breast)", 0, 5),
-    ("Mata & Telinga (Eye & Ear)", 0, 5),
-    ("Genitalia (Male/Female)", 0, 5),
-    ("Postur (Posture)", 0, 5),
-    ("Square window", 0, 5),
-    ("Arm recoil", 0, 5),
-    ("Popliteal angle", 0, 5),
-    ("Scarf sign", 0, 5),
-    ("Heel to ear", 0, 5),
-]
-MAX_BALLARD_SCORE = sum([item[2] for item in BALLARD_ITEMS])  # expected 60
-
-def score_to_ga(total_score):
-    """Map total Ballard score (0..MAX) to gestational age in weeks (24..44) linear."""
-    ga = 24 + (total_score / MAX_BALLARD_SCORE) * 20.0
-    return round(ga, 1)
-
-# ---------------------------
-# Lubchenco classification -> KMK / SMK / BMK
-# ---------------------------
-def classify_kategori(ga_weeks, berat_g):
-    # pick nearest GA week available
-    ga_near_idx = (df_lub['GA_weeks'] - ga_weeks).abs().argsort()[:1][0]
-    row = df_lub.iloc[ga_near_idx]
-    ga_used = int(row['GA_weeks'])
-    p10, p25, p50, p75, p90 = row['P10'], row['P25'], row['P50'], row['P75'], row['P90']
-    if berat_g < p10:
-        kategori = "KMK (Kecil untuk Masa Kehamilan)"
-    elif berat_g > p90:
-        kategori = "BMK (Besar untuk Masa Kehamilan)"
-    else:
-        kategori = "SMK (Sedang untuk Masa Kehamilan)"
-    return kategori, ga_used, row
-
-# ---------------------------
-# PDF report util (fixed ImageReader)
-# ---------------------------
-def create_pdf(report_data: dict, fig):
-    buf = BytesIO()
-    c = canvas.Canvas(buf, pagesize=A4)
-    width, height = A4
-
-    # Title
-    c.setFont("Helvetica-Bold", 14)
-    c.drawString(50, height - 50, "LAPORAN: Ballard + Lubchenco")
-
-    # Metadata / results
-    c.setFont("Helvetica", 10)
-    y = height - 80
-    for k, v in report_data.items():
-        c.drawString(50, y, f"{k}: {v}")
-        y -= 14
-        if y < 120:
-            c.showPage()
-            y = height - 50
-
-    # Draw figure
-    img_buf = BytesIO()
-    fig.savefig(img_buf, format="png", bbox_inches="tight", dpi=150)
-    img_buf.seek(0)
-    image = ImageReader(img_buf)
-    # place image
-    c.drawImage(image, 40, 80, width=520, preserveAspectRatio=True, mask='auto')
-
-    c.showPage()
-    c.save()
-    buf.seek(0)
-    return buf.getvalue()
-
-# ---------------------------
 # STREAMLIT UI
 # ---------------------------
-st.title("🍼 Aplikasi Ballard + Kurva Lubchenco (Final)")
-st.markdown("Isi komponen Ballard (New Ballard) — hasil akan otomatis jadi skor, dikonversi ke usia gestasi, diplot ke kurva Lubchenco, dan ditentukan kategori KMK/SMK/BMK.")
+st.title("🍼 Aplikasi Ballard + Kurva Lubchenco (KMK/SMK/BMK)")
+st.caption("Menilai usia kehamilan dari skor Ballard, menentukan status pertumbuhan bayi berdasarkan kurva Lubchenco.")
 
-with st.expander("ℹ️ Petunjuk singkat"):
+with st.expander("📖 Petunjuk Singkat"):
     st.write("""
-    - Isi tiap komponen Ballard (skor 0–5). Aplikasi menggunakan total max 60 → usia gestasi dipetakan ke 24–44 minggu.
-    - Hanya input skor dan berat bayi diperlukan. Hasil = usia estimasi (Ballard), kategori KMK/SMK/BMK, grafik & PDF.
+    1. Isi semua komponen Ballard (0–5).
+    2. Aplikasi menghitung total skor dan usia kehamilan (tabel resmi Ballard).
+    3. Masukkan berat bayi → sistem menampilkan hasil KMK / SMK / BMK.
+    4. Grafik Lubchenco dan laporan PDF akan otomatis tersedia.
     """)
 
-# Ballard form
-st.subheader("1) Isi Komponen Ballard")
+# Form Ballard
+st.subheader("🧠 Komponen Ballard")
 cols = st.columns(3)
-ballard_values = {}
-i = 0
-for label, lo, hi in BALLARD_ITEMS:
-    col = cols[i % 3]
-    with col:
-        ballard_values[label] = st.number_input(label, min_value=lo, max_value=hi, value=2, step=1, key=f"b_{i}")
-    i += 1
+ballard_scores = {}
+for i, (label, lo, hi) in enumerate(BALLARD_ITEMS):
+    with cols[i % 3]:
+        ballard_scores[label] = st.number_input(label, min_value=lo, max_value=hi, value=2, step=1, key=f"ballard_{i}")
 
-total_ballard = sum(ballard_values.values())
-ga_from_ballard = score_to_ga(total_ballard)
+total_score = sum(ballard_scores.values())
+ga_ballard = score_to_ga(total_score)
 
-st.markdown(f"**Total Skor Ballard:** {total_ballard} / {MAX_BALLARD_SCORE}")
-st.markdown(f"**Estimasi Usia Gestasi (Ballard):** **{ga_from_ballard} minggu**")
+st.markdown(f"**Total Skor Ballard:** {total_score}")
+st.markdown(f"**Usia Kehamilan (tabel Ballard):** {ga_ballard} minggu")
 
 # Berat input
-st.subheader("2) Input Berat Lahir")
-col_a, col_b = st.columns(2)
-with col_a:
-    berat = st.number_input("Berat lahir (gram)", min_value=400, max_value=4600, value=3000, step=50)
-with col_b:
-    # also allow manual override of GA (optional)
-    ga_manual = st.checkbox("Override usia gestasi manual (opsional)", value=False)
-    if ga_manual:
-        ga_input = st.number_input("Masukkan usia gestasi manual (minggu)", min_value=24.0, max_value=43.0, value=ga_from_ballard, step=0.1)
+st.subheader("⚖️ Berat Lahir")
+berat = st.number_input("Masukkan berat lahir (gram)", min_value=400, max_value=4600, value=3000, step=50)
 
-if ga_manual:
-    ga_use = ga_input
-else:
-    ga_use = ga_from_ballard
-
-# Analyze button
+# Analisis
 if st.button("🔍 Hitung & Tampilkan Hasil"):
-    kategori, ga_used, pers_row = classify_kategori(ga_use, berat)
+    kategori, ga_used, row = classify_kmk_smk_bmk(ga_ballard, berat)
 
-    st.success(f"Usia gestasi yang digunakan: **{ga_used} minggu**")
-    st.metric("Kategori menurut Lubchenco", kategori)
+    st.success(f"Usia gestasi digunakan: **{ga_used} minggu**")
+    st.metric("Kategori (Lubchenco)", kategori)
+    st.table(row[['P10', 'P25', 'P50', 'P75', 'P90']].to_frame().T)
 
-    st.subheader("Nilai Persentil (usia yang digunakan)")
-    st.table(pers_row[['P10','P25','P50','P75','P90']].to_frame().T)
-
-    # Plot
+    # Plot grafik
     fig, ax = plt.subplots(figsize=(8,6))
     ax.set_facecolor("#f9f9f9")
     ax.set_xlim(24, 43)
     ax.set_ylim(400, 4600)
-    # grid lines tiap 1 minggu / 500 gram
-    ax.set_xticks(range(24,44,1))
+    ax.set_xticks(range(24,44))
     ax.set_yticks(range(400,4601,500))
-    ax.grid(which='both', linestyle='--', linewidth=0.5, alpha=0.6)
+    ax.grid(which='both', linestyle='--', alpha=0.5)
 
-    # color lines
-    ax.plot(df_lub['GA_weeks'], df_lub['P10'], '--', color="#e74c3c", linewidth=2.2, label="P10 (Merah)")
-    ax.plot(df_lub['GA_weeks'], df_lub['P25'], '-', color="#f39c12", linewidth=2.2, label="P25 (Oranye)")
-    ax.plot(df_lub['GA_weeks'], df_lub['P50'], '-', color="#3498db", linewidth=2.5, label="P50 (Biru)")
-    ax.plot(df_lub['GA_weeks'], df_lub['P75'], '-', color="#27ae60", linewidth=2.2, label="P75 (Hijau)")
-    ax.plot(df_lub['GA_weeks'], df_lub['P90'], '--', color="#8e44ad", linewidth=2.2, label="P90 (Ungu)")
+    ax.plot(df_lub['GA_weeks'], df_lub['P10'], '--', color="red", label="P10")
+    ax.plot(df_lub['GA_weeks'], df_lub['P25'], '-', color="orange", label="P25")
+    ax.plot(df_lub['GA_weeks'], df_lub['P50'], '-', color="blue", label="P50")
+    ax.plot(df_lub['GA_weeks'], df_lub['P75'], '-', color="green", label="P75")
+    ax.plot(df_lub['GA_weeks'], df_lub['P90'], '--', color="purple", label="P90")
 
-    # plot baby
-    ax.scatter([ga_used], [berat], s=160, color="black", edgecolors="white", zorder=6, label="Bayi")
+    ax.scatter([ga_used], [berat], s=160, color="black", edgecolors="white", zorder=5, label="Bayi")
 
     ax.set_xlabel("Usia Gestasi (minggu)")
     ax.set_ylabel("Berat Badan (gram)")
-    ax.set_title("Kurva Lubchenco — Berat Lahir menurut Usia Gestasi")
-    ax.legend(loc="upper left", frameon=True)
+    ax.set_title("Kurva Lubchenco – Berat Lahir terhadap Usia Gestasi")
+    ax.legend()
     st.pyplot(fig)
 
-    # Save history
-    record = {
+    # PDF
+    report = {
+        "Tanggal": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "Total Skor Ballard": total_score,
+        "Usia Gestasi (Ballard)": ga_ballard,
+        "Usia digunakan (Lubchenco)": ga_used,
+        "Berat lahir (g)": berat,
+        "Kategori": kategori
+    }
+    pdf_bytes = create_pdf(report, fig)
+    st.download_button("⬇ Unduh Laporan PDF", data=pdf_bytes, file_name=f"laporan_ballard_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf", mime="application/pdf")
+
+    # History
+    save_history({
         "timestamp": datetime.now().isoformat(sep=' ', timespec='seconds'),
-        "total_ballard": total_ballard,
-        "ga_ballard": ga_from_ballard,
+        "total_ballard": total_score,
+        "ga_ballard": ga_ballard,
         "ga_used": ga_used,
         "berat_g": berat,
         "kategori": kategori
-    }
-    try:
-        save_history(record)
-        st.info("Hasil tersimpan ke history lokal.")
-    except Exception as e:
-        st.warning(f"Gagal menyimpan history: {e}")
+    })
 
-    # PDF download
-    report_data = {
-        "Tanggal": datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "Total Skor Ballard": total_ballard,
-        "Usia Estimasi (Ballard)": ga_from_ballard,
-        "Usia Digunakan": ga_used,
-        "Berat Lahir (g)": berat,
-        "Kategori (KMK/SMK/BMK)": kategori
-    }
-    pdf_bytes = create_pdf(report_data, fig)
-    st.download_button("⬇ Unduh Laporan PDF", data=pdf_bytes, file_name=f"laporan_ballard_lubchenco_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf", mime="application/pdf")
-
-# ---------------------------
-# HISTORY SECTION
-# ---------------------------
+# History
 st.markdown("---")
-st.subheader("Riwayat Analisis (lokal)")
-history_df = load_history()
-if history_df.empty:
-    st.info("Belum ada riwayat.")
+st.subheader("🧾 Riwayat Analisis")
+hist = load_history()
+if hist.empty:
+    st.info("Belum ada riwayat tersimpan.")
 else:
-    st.dataframe(history_df.sort_values(by='timestamp', ascending=False))
-    st.download_button("⬇ Unduh Semua Riwayat (CSV)", data=history_df.to_csv(index=False).encode('utf-8'), file_name="history_ballard_lubchenco.csv", mime="text/csv")
+    st.dataframe(hist.sort_values(by='timestamp', ascending=False))
+    st.download_button("⬇ Unduh CSV Riwayat", data=hist.to_csv(index=False).encode('utf-8'), file_name="riwayat_ballard_lubchenco.csv", mime="text/csv")
