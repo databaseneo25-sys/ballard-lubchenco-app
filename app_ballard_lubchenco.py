@@ -206,8 +206,9 @@ def create_pdf_report(result_dict, fig=None):
 # STREAMLIT APP UI
 # ---------------------------
 st.set_page_config(page_title="Ballard + Lubchenco Analyzer (Pro)", layout="centered")
-st.title("🍼 Ballard + Lubchenco Analyzer — Pro")
-st.markdown("Estimasi usia gestasi dari skor Ballard, klasifikasi berat lahir terhadap kurva Lubchenco, grafik multi-percentile, interpretasi klinis (WHO + IDAI style), penyimpanan riwayat, dan ekspor PDF.")
+st.title("🍼 Ballard + Lubchenco Analyzer — Ruang Transisi RSUD dr Mohamad Soewandhie Surabaya")
+st.markdown("Persembahan oleh Ruang Transisi RSUD dr. Mohamad Soewandhie Surabaya
+Sebagai inovasi pelayanan dalam penilaian usia gestasi dan status pertumbuhan neonatus dengan Estimasi usia gestasi dari skor Ballard, klasifikasi berat lahir terhadap kurva Lubchenco, grafik multi-percentile, interpretasi klinis (WHO + IDAI style).")
 
 with st.expander("📌 TIPS & Disclaimer (baca singkat)"):
     st.write("""
