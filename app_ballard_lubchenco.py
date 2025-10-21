@@ -17,7 +17,7 @@ st.set_page_config(page_title="Ballard + Lubchenco Final", layout="centered")
 # ---------------------------
 DATA = {
     "GA_weeks": [24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43],
-    "P10": [500,600,700,800,900,1050,1200,1350,1500,1700,1900,2100,2300,2500,2600,2700,2700,2800,2850,2900],
+    "P10": [500,600,700,800,950,1100,1250,1400,1550,1700,1900,2100,2300,2500,2600,2650,2600,2700,2750,2800],
     "P25": [600,750,900,1050,1200,1350,1500,1650,1800,2000,2200,2350,2500,2600,2800,2900,3000,3100,3150,3200],
     "P50": [700,850,1000,1150,1300,1500,1650,1800,2000,2200,2400,2550,2700,2900,3100,3200,3300,3400,3450,3500],
     "P75": [800,950,1100,1300,1450,1650,1800,2000,2200,2400,2600,2750,3000,3200,3400,3500,3600,3700,3750,3800],
@@ -52,18 +52,18 @@ def score_to_ga(total_score):
 # BALLARD ITEMS (12 komponen)
 # ---------------------------
 BALLARD_ITEMS = [
-    ("1.Sikap tubuh (Postur)", 0, 4),
-    ("2.Persegi jendela (pergelangan tangan)", 0, 4),
-    ("3.Rekoli lengan (Arm recoil)", 0, 4),
-    ("4.Sudut popliteal", 0, 5),
-    ("5.Tanda selendang (Scarf sign)", 0, 4),
-    ("6.Tumit ke telinga (Heel to ear)", 0, 4),
-    ("7.Kulit", 0, 5),
-    ("8.Lanugo", 0, 4),
-    ("9.Permukaan plantar (Plantar surface)", 0, 4),
-    ("10.Payudara", 0, 4),
-    ("11.Mata & telinga", 0, 4),
-    ("12.Genitalia (L/P)", 0, 4),
+    ("1. Sikap tubuh (Postur)", 0, 4),
+    ("2. Persegi jendela (pergelangan tangan)", 0, 4),
+    ("3. Rekoli lengan (Arm recoil)", 0, 4),
+    ("4. Sudut popliteal", 0, 5),
+    ("5. Tanda selendang (Scarf sign)", 0, 4),
+    ("6. Tumit ke telinga (Heel to ear)", 0, 4),
+    ("7. Kulit", 0, 5),
+    ("8. Lanugo", 0, 4),
+    ("9. Permukaan plantar (Plantar surface)", 0, 4),
+    ("10. Payudara", 0, 4),
+    ("11. Mata & telinga", 0, 4),
+    ("12. Genitalia (L/P)", 0, 4),
 ]
 
 # ---------------------------
@@ -73,11 +73,11 @@ def classify_kmk_smk_bmk(ga_weeks, berat):
     row = df_lub.iloc[(df_lub['GA_weeks'] - ga_weeks).abs().argsort()[:1]].iloc[0]
     ga_used = row['GA_weeks']
     if berat < row['P10']:
-        kategori = "KMK (Kecil untuk Masa Kehamilan)"
+        kategori = "KMK (Kecil Masa Kehamilan)"
     elif berat > row['P90']:
-        kategori = "BMK (Besar untuk Masa Kehamilan)"
+        kategori = "BMK (Besar Masa Kehamilan)"
     else:
-        kategori = "SMK (Sesuai untuk Masa Kehamilan)"
+        kategori = "SMK (Sesuai Masa Kehamilan)"
     return kategori, int(ga_used), row
 
 # ---------------------------
@@ -127,7 +127,7 @@ def load_history():
 # ---------------------------
 # STREAMLIT UI
 # ---------------------------
-st.title("👶 Aplikasi Ballard + Kurva Lubchenco (KMK/SMK/BMK) Transisi NICU RSUD dr Mohamad Soewandhie")
+st.title("👶 Aplikasi Ballard + Kurva Lubchenco (KMK/SMK/BMK) Transisi RSUD dr Mohamad Soewandhie")
 st.caption("💌Persembahan khusus dari Kami sebagai bentuk komitmen dalam optimalisasi pelayanan perinatologi dan neonatal care dengan Menilai usia kehamilan dari skor Ballard, menentukan status pertumbuhan bayi berdasarkan kurva Lubchenco.")
 
 with st.expander("📖 Petunjuk Singkat"):
