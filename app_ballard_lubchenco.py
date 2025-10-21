@@ -77,7 +77,7 @@ def classify_kmk_smk_bmk(ga_weeks, berat):
     elif berat > row['P90']:
         kategori = "BMK (Besar untuk Masa Kehamilan)"
     else:
-        kategori = "SMK (Sedang untuk Masa Kehamilan)"
+        kategori = "SMK (Sesuai untuk Masa Kehamilan)"
     return kategori, int(ga_used), row
 
 # ---------------------------
@@ -128,7 +128,7 @@ def load_history():
 # STREAMLIT UI
 # ---------------------------
 st.title("🍼 Aplikasi Ballard + Kurva Lubchenco (KMK/SMK/BMK)")
-st.caption("Menilai usia kehamilan dari skor Ballard, menentukan status pertumbuhan bayi berdasarkan kurva Lubchenco.")
+st.caption("Persembahan khusus dari Ruang Transisi RSUD dr. Mohamad Soewandhie Surabaya sebagai bentuk komitmen dalam optimalisasi pelayanan perinatologi dan neonatal care dengan Menilai usia kehamilan dari skor Ballard, menentukan status pertumbuhan bayi berdasarkan kurva Lubchenco.")
 
 with st.expander("📖 Petunjuk Singkat"):
     st.write("""
