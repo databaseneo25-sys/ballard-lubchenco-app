@@ -52,18 +52,18 @@ def score_to_ga(total_score):
 # BALLARD ITEMS (12 komponen)
 # ---------------------------
 BALLARD_ITEMS = [
-    ("Sikap tubuh (Postur)", 0, 5),
-    ("Persegi jendela (pergelangan tangan)", 0, 5),
-    ("Rekoli lengan (Arm recoil)", 0, 5),
-    ("Sudut popliteal", 0, 5),
-    ("Tanda selendang (Scarf sign)", 0, 5),
-    ("Tumit ke telinga (Heel to ear)", 0, 5),
-    ("Kulit", 0, 5),
-    ("Lanugo", 0, 5),
-    ("Permukaan plantar (Plantar surface)", 0, 5),
-    ("Payudara", 0, 5),
-    ("Mata & telinga", 0, 5),
-    ("Genitalia (L/P)", 0, 5),
+    ("1.Sikap tubuh (Postur)", 0, 4),
+    ("2.Persegi jendela (pergelangan tangan)", 0, 4),
+    ("3.Rekoli lengan (Arm recoil)", 0, 4),
+    ("4.Sudut popliteal", 0, 5),
+    ("5.Tanda selendang (Scarf sign)", 0, 4),
+    ("6.Tumit ke telinga (Heel to ear)", 0, 4),
+    ("7.Kulit", 0, 5),
+    ("8.Lanugo", 0, 4),
+    ("9.Permukaan plantar (Plantar surface)", 0, 4),
+    ("10.Payudara", 0, 4),
+    ("11.Mata & telinga", 0, 4),
+    ("12.Genitalia (L/P)", 0, 4),
 ]
 
 # ---------------------------
@@ -127,8 +127,8 @@ def load_history():
 # ---------------------------
 # STREAMLIT UI
 # ---------------------------
-st.title("🍼 Aplikasi Ballard + Kurva Lubchenco (KMK/SMK/BMK)")
-st.caption("Persembahan khusus dari Ruang Transisi RSUD dr. Mohamad Soewandhie Surabaya sebagai bentuk komitmen dalam optimalisasi pelayanan perinatologi dan neonatal care dengan Menilai usia kehamilan dari skor Ballard, menentukan status pertumbuhan bayi berdasarkan kurva Lubchenco.")
+st.title("👶 Aplikasi Ballard + Kurva Lubchenco (KMK/SMK/BMK) Transisi NICU RSUD dr Mohamad Soewandhie")
+st.caption("💌Persembahan khusus dari Kami sebagai bentuk komitmen dalam optimalisasi pelayanan perinatologi dan neonatal care dengan Menilai usia kehamilan dari skor Ballard, menentukan status pertumbuhan bayi berdasarkan kurva Lubchenco.")
 
 with st.expander("📖 Petunjuk Singkat"):
     st.write("""
