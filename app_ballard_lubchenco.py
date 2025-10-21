@@ -132,7 +132,7 @@ st.caption("💌Persembahan khusus dari Kami sebagai bentuk komitmen dalam optim
 
 with st.expander("📖 Petunjuk Singkat"):
     st.write("""
-    1. Isi semua komponen Ballard (0–5).
+    1. Isi semua komponen Ballard (0–4/5).
     2. Aplikasi menghitung total skor dan usia kehamilan (tabel resmi Ballard).
     3. Masukkan berat bayi → sistem menampilkan hasil KMK / SMK / BMK.
     4. Grafik Lubchenco dan laporan PDF akan otomatis tersedia.
@@ -155,6 +155,54 @@ st.markdown(f"**Usia Kehamilan (tabel Ballard):** {ga_ballard} minggu")
 # Berat input
 st.subheader("⚖️ Berat Lahir")
 berat = st.number_input("Masukkan berat lahir (gram)", min_value=400, max_value=4600, value=3000, step=50)
+# --- APGAR SCORE ---
+st.subheader("APGAR Score (menit 1, 5, 10)")
+apgar = {"1'": {}, "5'": {}, "10'": {}}
+
+apgar_components = [
+    "Appearance (Warna kulit)",
+    "Pulse (Denyut jantung)",
+    "Grimace (Respons refleks)",
+    "Activity (Tonus otot)",
+    "Respiration (Pernapasan)"
+]
+
+for minute in ["1'", "5'", "10'"]:
+    st.markdown(f"**APGAR menit {minute}**")
+    cols = st.columns(3)
+    for i, comp in enumerate(apgar_components):
+        with cols[i % 3]:
+            apgar[minute][comp] = st.number_input(
+                f"{comp} ({minute})",
+                min_value=0, max_value=2, value=2, step=1,
+                key=f"apgar_{minute}_{i}"
+            )
+# --- DOWNES SCORE ---
+st.subheader("Downes Score (Penilaian pernapasan)")
+downes_items = [
+    "Frekuensi napas / distress",
+    "Cyanosis",
+    "Retraksi",
+    "Grunting",
+    "Air entry"
+]
+downes_scores = {}
+cols = st.columns(3)
+for i, label in enumerate(downes_items):
+    with cols[i % 3]:
+        downes_scores[label] = st.number_input(
+            f"{label} (0-2)",
+            min_value=0, max_value=2, value=0, step=1, key=f"downes_{i}"
+        )
+
+downes_total = sum(downes_scores.values())
+if downes_total <= 3:
+    downes_note = "Ringan"
+elif downes_total <= 6:
+    downes_note = "Sedang"
+else:
+    downes_note = "Berat"
+st.write(f"**Total Downes Score: {downes_total} → {downes_note}**")
 
 # Analisis
 if st.button("🔍 Hitung & Tampilkan Hasil"):
