@@ -52,17 +52,17 @@ def score_to_ga(total_score):
 # BALLARD ITEMS (12 komponen)
 # ---------------------------
 BALLARD_ITEMS = [
-    ("1. Sikap tubuh (Postur)", 0, 4),
-    ("2. Persegi jendela (pergelangan tangan)", 0, 4),
-    ("3. Rekoli lengan (Arm recoil)", 0, 4),
+    ("1. Sikap (Postur)", 0, 4),
+    ("2. Sudut pergelangan tangan", 0, 4),
+    ("3. Membaliknya lengan (Arm recoil)", 0, 4),
     ("4. Sudut popliteal", 0, 5),
-    ("5. Tanda selendang (Scarf sign)", 0, 4),
-    ("6. Tumit ke telinga (Heel to ear)", 0, 4),
+    ("5. Tanda selendang", 0, 4),
+    ("6. Tumit ke telinga", 0, 4),
     ("7. Kulit", 0, 5),
     ("8. Lanugo", 0, 4),
-    ("9. Permukaan plantar (Plantar surface)", 0, 4),
+    ("9. Lipatan plantar", 0, 4),
     ("10. Payudara", 0, 4),
-    ("11. Mata & telinga", 0, 4),
+    ("11. Daun telinga", 0, 4),
     ("12. Genitalia (L/P)", 0, 4),
 ]
 
