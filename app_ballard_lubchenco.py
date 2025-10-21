@@ -218,3 +218,11 @@ if hist.empty:
 else:
     st.dataframe(hist.sort_values(by='timestamp', ascending=False))
     st.download_button("⬇ Unduh CSV Riwayat", data=hist.to_csv(index=False).encode('utf-8'), file_name="riwayat_ballard_lubchenco.csv", mime="text/csv")
+    # Tombol hapus riwayat
+if not hist.empty:
+    if st.button("🗑 Hapus Semua Riwayat"):
+        try:
+            os.remove(HISTORY_FILE)
+            st.success("Riwayat analisis berhasil dihapus!")
+        except Exception as e:
+            st.error(f"Gagal menghapus riwayat: {e}")
