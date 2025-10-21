@@ -1,4 +1,4 @@
-# app_ballard_lubchenco_final.py
+# app_lubchenco_final.py
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -8,15 +8,15 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 
 # ---------------------------
-# DATA LUBCHENCO (versi perbaikan & lengkap)
+# DATA LUBCHENCO (VERSI FINAL)
 # ---------------------------
 DATA = {
     "GA_weeks": [24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43],
-    "P10": [550,637,750,875,1000,1119,1250,1413,1600,1797,2000,2206,2400,2568,2700,2792,2850,2883,2900,2950],
-    "P25": [600,712,850,1000,1150,1293,1450,1639,1850,2071,2300,2535,2750,2922,3050,3141,3200,3234,3250,3300],
-    "P50": [650,787,950,1125,1300,1468,1650,1864,2100,2344,2600,2865,3100,3272,3400,3509,3600,3666,3700,3750],
-    "P75": [700,860,1050,1252,1450,1637,1850,2119,2400,2650,2900,3182,3450,3653,3800,3914,4000,4061,4100,4150],
-    "P90": [750,933,1150,1379,1600,1805,2050,2374,2700,2955,3200,3500,3800,4033,4200,4318,4400,4457,4500,4550]
+    "P10": [500,600,700,800,900,1050,1200,1350,1500,1700,1900,2100,2300,2450,2550,2600,2600,2650,2700,2750],
+    "P25": [600,700,850,950,1100,1250,1400,1600,1800,2000,2200,2400,2600,2750,2900,3000,3100,3150,3200,3250],
+    "P50": [700,800,950,1100,1250,1400,1600,1800,2000,2200,2450,2700,2950,3100,3250,3400,3400,3450,3500,3550],
+    "P75": [800,900,1050,1200,1350,1500,1700,1900,2100,2350,2600,2850,3100,3300,3550,3700,3900,3950,4000,4050],
+    "P90": [900,1000,1150,1300,1500,1650,1850,2100,2350,2600,2850,3100,3350,3600,3850,4000,4300,4350,4400,4450]
 }
 df = pd.DataFrame(DATA)
 
@@ -71,8 +71,8 @@ def create_pdf(data, fig):
 # ---------------------------
 # STREAMLIT APP
 # ---------------------------
-st.set_page_config(page_title="Ballard + Lubchenco (Final)", layout="centered")
-st.title("🍼 Analisis Ballard + Lubchenco (Final - Warna & Skala Asli)")
+st.set_page_config(page_title="Lubchenco Final", layout="centered")
+st.title("🍼 Kurva Lubchenco – Berat Lahir terhadap Usia Gestasi (Final)")
 
 col1, col2 = st.columns(2)
 with col1:
@@ -81,38 +81,43 @@ with col2:
     bb = st.number_input("Berat lahir (gram)", 400, 6000, 3000)
 
 if st.button("🔍 Analisa"):
-    # Perhitungan
+    # Hitung usia gestasi & klasifikasi
     ga = ballard_to_ga(skor)
     kategori, ga_used, row = classify_lubchenco(ga, bb)
 
-    # Hasil teks
+    # Hasil
     st.success(f"Usia Gestasi (Ballard): **{ga} minggu** (digunakan: {ga_used} minggu)")
     st.metric("Kategori", kategori)
     st.write("**Nilai Persentil (Lubchenco):**")
     st.table(row[['P10','P25','P50','P75','P90']].to_frame().T)
 
     # ---------------------------
-    # GRAFIK BERWARNA MIRIP FOTO
+    # GRAFIK (warna & grid mirip grafik asli)
     # ---------------------------
     fig, ax = plt.subplots(figsize=(8,6))
     ax.set_facecolor("#f9f9f9")
-    ax.grid(True, linestyle='--', linewidth=0.6, alpha=0.6)
+    ax.grid(which='both', linestyle='--', linewidth=0.5, alpha=0.6)
 
-    # garis persentil
-    ax.plot(df["GA_weeks"], df["P10"], '--', color="#e74c3c", linewidth=2.2, label="P10 (Merah)")
-    ax.plot(df["GA_weeks"], df["P25"], '-', color="#f39c12", linewidth=2.2, label="P25 (Oranye)")
+    # Garis bantu tiap 1 minggu dan 500 gram
+    ax.set_xticks(range(24, 44, 1))
+    ax.set_yticks(range(400, 4601, 500))
+    ax.grid(which='both', linestyle='--', linewidth=0.5, alpha=0.6)
+
+    # Garis persentil berwarna
+    ax.plot(df["GA_weeks"], df["P10"], '--', color="#e74c3c", linewidth=2, label="P10 (Merah)")
+    ax.plot(df["GA_weeks"], df["P25"], '-', color="#f39c12", linewidth=2, label="P25 (Oranye)")
     ax.plot(df["GA_weeks"], df["P50"], '-', color="#3498db", linewidth=2.5, label="P50 (Biru)")
-    ax.plot(df["GA_weeks"], df["P75"], '-', color="#27ae60", linewidth=2.2, label="P75 (Hijau)")
-    ax.plot(df["GA_weeks"], df["P90"], '--', color="#8e44ad", linewidth=2.2, label="P90 (Ungu)")
+    ax.plot(df["GA_weeks"], df["P75"], '-', color="#27ae60", linewidth=2, label="P75 (Hijau)")
+    ax.plot(df["GA_weeks"], df["P90"], '--', color="#8e44ad", linewidth=2, label="P90 (Ungu)")
 
-    # titik bayi
-    ax.scatter([ga_used], [bb], s=140, color="black", edgecolors="white", zorder=5, label="Bayi")
+    # Titik bayi
+    ax.scatter([ga_used], [bb], s=160, color="black", edgecolors="white", zorder=5, label="Bayi")
 
-    # set batas sumbu sesuai permintaan
+    # Batas sumbu
     ax.set_xlim(24, 43)
     ax.set_ylim(400, 4600)
 
-    # label & gaya
+    # Label dan gaya
     ax.set_xlabel("Usia Gestasi (minggu)", fontsize=11)
     ax.set_ylabel("Berat Badan (gram)", fontsize=11)
     ax.set_title("Kurva Lubchenco — Berat Lahir terhadap Usia Gestasi", fontsize=13, fontweight="bold")
@@ -134,6 +139,6 @@ if st.button("🔍 Analisa"):
     st.download_button(
         "⬇ Unduh Laporan PDF",
         data=pdf_bytes,
-        file_name=f"laporan_ballard_lubchenco_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
+        file_name=f"laporan_lubchenco_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
         mime="application/pdf"
     )
