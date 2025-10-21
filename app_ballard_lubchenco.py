@@ -103,3 +103,15 @@ if tombol_hitung:
         st.success("✅ Bayi tergolong **LGA**. Waspadai risiko hipoglikemia pada bayi besar.")
     else:
         st.info("✅ Bayi termasuk **AGA**. Berat badan sesuai usia gestasi.")
+# app_ballard_lubchenco.py
+import streamlit as st
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from io import BytesIO
+from datetime import datetime
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import mm
+
+# ----------------
