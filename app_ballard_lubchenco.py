@@ -40,3 +40,66 @@ def klasifikasi_lubchenco(usia_gestasi, berat_badan):
     else:
         kategori = "🔵 AGA (normal, persentil 10-90)"
     return kategori, row, usia_gestasi
+# ==============================
+# STREAMLIT UI
+# ==============================
+st.title("🍼 Aplikasi Penentuan Usia Gestasi & Klasifikasi Berat Bayi (Ballard + Lubchenco)")
+st.write("Aplikasi ini secara otomatis menghitung usia gestasi berdasarkan skor Ballard dan mengklasifikasikan berat badan bayi sesuai grafik Lubchenco.")
+
+# ------------------------------
+# INPUT FORM
+# ------------------------------
+st.subheader("📥 Input Data Bayi")
+total_skor = st.number_input("Masukkan Total Skor Ballard", min_value=0, max_value=50, value=30)
+berat_badan = st.number_input("Masukkan Berat Badan Bayi (gram)", min_value=300, max_value=6000, value=2500)
+
+jenis_kelamin = st.radio("Jenis Kelamin Bayi", ["Laki-laki", "Perempuan"])
+
+tombol_hitung = st.button("🔍 Hitung & Klasifikasi")
+
+if tombol_hitung:
+    usia_gestasi = hitung_usia_gestasi_ballard(total_skor)
+    st.success(f"🧮 Usia gestasi hasil perhitungan Ballard: **{usia_gestasi} minggu**")
+
+    kategori, data_persentil, usia_final = klasifikasi_lubchenco(usia_gestasi, berat_badan)
+
+    st.info(f"📊 **Klasifikasi Lubchenco**: {kategori}")
+    
+    # ------------------------------
+    # TABEL PERSENTIL
+    # ------------------------------
+    st.subheader("📌 Nilai Persentil pada Usia Gestasi Terkait:")
+    st.table(pd.DataFrame([data_persentil]))
+
+    # ------------------------------
+    # GRAFIK PERTUMBUHAN
+    # ------------------------------
+    st.subheader("📈 Grafik Pertumbuhan Berdasarkan Grafik Lubchenco")
+
+    plt.figure()
+    plt.plot(df_lubchenco['GA_weeks'], df_lubchenco['P10'], label='Persentil 10 (SGA)', linestyle='--')
+    plt.plot(df_lubchenco['GA_weeks'], df_lubchenco['P25'], label='Persentil 25')
+    plt.plot(df_lubchenco['GA_weeks'], df_lubchenco['P50'], label='Persentil 50 (Median)')
+    plt.plot(df_lubchenco['GA_weeks'], df_lubchenco['P75'], label='Persentil 75')
+    plt.plot(df_lubchenco['GA_weeks'], df_lubchenco['P90'], label='Persentil 90 (LGA)', linestyle='--')
+
+    # Titik bayi
+    plt.scatter([usia_final], [berat_badan], s=200, edgecolors='black', label='Bayi Anda', marker='o')
+
+    plt.title("Grafik Lubchenco: Berat Badan vs Usia Gestasi")
+    plt.xlabel("Usia Gestasi (minggu)")
+    plt.ylabel("Berat Badan (gram)")
+    plt.grid(True)
+    plt.legend()
+    st.pyplot(plt)
+
+    # ------------------------------
+    # INTERPRETASI KLINIS
+    # ------------------------------
+    st.subheader("📌 Interpretasi Klinis Otomatis")
+    if "SGA" in kategori:
+        st.error("⚠ Bayi tergolong **SGA**. Perlu evaluasi untuk IUGR dan risiko komplikasi metabolik.")
+    elif "LGA" in kategori:
+        st.success("✅ Bayi tergolong **LGA**. Waspadai risiko hipoglikemia pada bayi besar.")
+    else:
+        st.info("✅ Bayi termasuk **AGA**. Berat badan sesuai usia gestasi.")
