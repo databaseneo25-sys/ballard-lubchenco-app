@@ -121,9 +121,7 @@ def create_pdf_report(result_dict, fig=None):
         ("Usia Gestasi (minggu)", result_dict.get('ga_est')),
         ("Usia yang digunakan (minggu)", result_dict.get('ga_used')),
         ("Berat Lahir (g)", result_dict.get('weight_g')),
-        ("Panjang (cm)", result_dict.get('length_cm') or '—'),
-        ("Lingkar Kepala (cm)", result_dict.get('head_cm') or '—'),
-        ("Kategori", result_dict.get('kategori'))
+
     ]
     for label, val in fields:
         c.drawString(20*mm, y, f"{label}: {val}")
