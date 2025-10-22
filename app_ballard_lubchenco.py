@@ -68,18 +68,18 @@ def score_to_ga(total_score):
 # Ballard components (12 items)
 # ---------------------------
 BALLARD_ITEMS = [
-    ("Sikap tubuh (Postur)", 0, 5),
-    ("Persegi jendela (Square window / pergelangan)", 0, 5),
-    ("Recoil lengan (Arm recoil)", 0, 5),
-    ("Sudut popliteal (Popliteal angle)", 0, 5),
-    ("Tanda selendang (Scarf sign)", 0, 5),
-    ("Tumit ke telinga (Heel to ear)", 0, 5),
-    ("Kulit (Skin)", 0, 5),
-    ("Lanugo", 0, 5),
-    ("Permukaan plantar (Plantar)", 0, 5),
-    ("Payudara (Breast)", 0, 5),
-    ("Mata & telinga (Eye & Ear)", 0, 5),
-    ("Genitalia (Genital)", 0, 5),
+    ("1. Sikap tubuh (Postur)", 0, 4),
+    ("2. Persegi jendela (pergelangan tangan)", 0, 4),
+    ("3. Rekoli lengan (Arm recoil)", 0, 4),
+    ("4. Sudut popliteal", 0, 5),
+    ("5. Tanda selendang (Scarf sign)", 0, 4),
+    ("6. Tumit ke telinga (Heel to ear)", 0, 4),
+    ("7. Kulit", 0, 5),
+    ("8. Lanugo", 0, 4),
+    ("9. Permukaan plantar (Plantar surface)", 0, 4),
+    ("10. Payudara", 0, 4),
+    ("11. Mata & telinga", 0, 4),
+    ("12. Genitalia (L/P)", 0, 4),
 ]
 MAX_BALLARD = sum([hi for _,_,hi in BALLARD_ITEMS])
 
