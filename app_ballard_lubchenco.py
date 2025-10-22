@@ -15,7 +15,7 @@ import os
 st.set_page_config(page_title="Ballard+Lubchenco+APGAR+Downes")
 
 # ---------------------------
-# Title (centered visually but layout wide)
+# Title (centered visually)
 # ---------------------------
 st.markdown(
     """
@@ -78,7 +78,7 @@ BALLARD_ITEMS = [
     ("8. Lanugo", 0, 4),
     ("9. Permukaan plantar (Plantar surface)", 0, 4),
     ("10. Payudara", 0, 4),
-    ("11. Mata & telinga", 0, 4),
+    ("11. Daun telinga", 0, 4),
     ("12. Genitalia (L/P)", 0, 4),
 ]
 MAX_BALLARD = sum([hi for _,_,hi in BALLARD_ITEMS])
@@ -134,9 +134,9 @@ def classify_kategori(ga_weeks, berat_g):
     ga_used = int(row['GA_weeks'])
     p10, p90 = row['P10'], row['P90']
     if berat_g < p10:
-        kategori = "KMK (Kecil untuk Masa Kehamilan)"
+        kategori = "KMK (Kecil Masa Kehamilan)"
     elif berat_g > p90:
-        kategori = "BMK (Besar untuk Masa Kehamilan)"
+        kategori = "BMK (Besar Masa Kehamilan)"
     else:
         kategori = "SMK (Sesuai Masa Kehamilan)"
     return kategori, ga_used, row
