@@ -12,7 +12,7 @@ from reportlab.lib.utils import ImageReader
 import os
 
 # Page config: wide layout
-st.set_page_config(page_title="Ballard+Lubchenco+APGAR+Downes", layout="wide")
+st.set_page_config(page_title="Ballard+Lubchenco+APGAR+Downes")
 
 # ---------------------------
 # Title (centered visually but layout wide)
@@ -20,8 +20,8 @@ st.set_page_config(page_title="Ballard+Lubchenco+APGAR+Downes", layout="wide")
 st.markdown(
     """
     <div style="text-align:center;">
-        <h1 style="margin-bottom:2px;">🍼 Aplikasi Ballard + Kurva Lubchenco (KMK/SMK/BMK)</h1>
-        <div style="color: #555;">Penilaian APGAR • Downes • Ballard → Grafik Lubchenco • Laporan PDF</div>
+        <h1 style="margin-bottom:2px;">👶 Aplikasi Ballard + Kurva Lubchenco (KMK/SMK/BMK) Transisi RSUD dr Mohamad Soewandhie</h1>
+        <div style="color: #555;">💌Persembahan khusus dari Kami sebagai bentuk komitmen dalam optimalisasi pelayanan perinatologi dan neonatal care dengan Menilai usia kehamilan dari skor Ballard, menentukan status pertumbuhan bayi berdasarkan kurva Lubchenco</div>
     </div>
     """,
     unsafe_allow_html=True
